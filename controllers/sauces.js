@@ -5,7 +5,7 @@ const { Server } = require('http');
 
 //LIKE ET DISLIKE///////////////////////////////////////////////////////////////////////////////////////
 exports.likedSauce = (req, res, next) => {
-  const bodyValue = req.body.likes;
+  const bodyValue = req.body.like;
   const usersLiked = req.body.usersLiked;
   const usersDisliked = req.body.usersDisliked;
   const liked = {
@@ -15,57 +15,46 @@ exports.likedSauce = (req, res, next) => {
 
   switch (bodyValue) {
 
-    case ( like === 1 ):
+    case 1:
     
       Sauce.updateOne({_id:req.params.id}, {$inc:{likes:+1}, $push:{usersLiked:req.body.userId}})
-      .then(() => res.status(201).json({ message: 'like ajouté !' }))
-      .catch((error) => res.status(400).json({ error }));
+          .then(() => res.status(201).json({ message: 'like ajouté !' }))
+          .catch((error) => res.status(400).json({ error })); 
+      break;
     
-    break;
+    case -1:
+    
+        Sauce.updateOne({_id:req.params.id}, {$inc:{dislikes:+1}, $push:{usersDisliked:req.body.userId}})
+            .then(() => res.status(201).json({ message: 'dislike ajouté !' }))
+            .catch((error) => res.status(400).json({ error })); 
+        break;
+
+    case 0:
+          Sauce.findOne({_id:req.params.id})
+              .then((sauce) => {
+                if( 
+                  sauce.usersLiked.includes(req.body.userId)){
+                  Sauce.updateOne({_id:req.params.id}, {$inc:{likes:-1}, $pull:{usersLiked:req.body.userId}})
+                  .then(()=>res.status(200).json({ message: 'like supprimé !' }))
+
+                }else { 
+                  Sauce.updateOne({_id:req.params.id}, {$inc:{dislikes:-1}, $pull:{usersDisliked:req.body.userId}})
+                  .then(()=>res.status(201).json({ message: 'dislike supprimé !' }))        
+              }
+            })
+            .then(() => res.status(201).json({ message: 'tout est ok !' }))
+            .catch((error) => res.status(400).json({ error })); 
 }
 };
-  
-  /*
-  TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST
-  const bodyInfos = req.body;
-  console.log(bodyInfos);
 
-
-  if(bodyInfos.like === 1){
-    Sauce.updateOne({_id:req.params.id}, {$inc:{likes:+1}, $push:{usersLiked:req.body.userId}})
-    .then(() => res.status(201).json({ message: 'like ajouté !' }))
-    .catch((error) => res.status(400).json({ error }));
-  }
-  -------------------------------------------------------------------------------------
-exports.likedSauce = (req, res) => {
-  const sauce =  req.params.id;
-  const usersLiked = req.body.usersLiked;
-  const usersDisliked = req.body.usersDisliked;
-
-  const liked = {
-    userId: req.body.userId,
-    like: req.body.likes
-  }
-    switch ( sauce ) {
-    case (like === 1 ):
-        //on ajoute l'utilisateur dans le tableau usersLiked dans la bdd;
-        break;
-    case (like === -1):
-      //on ajoute l'utilisateur dans le tableau usersDisliked dans la bdd;
-      break;
-    default :
-      // message si l'utilisateur a deja liké ou disliké
-  }
-  }*/
-/////////////////////////////////////////////////////////////////////////////////////////////////
 exports.createSauce = (req, res) => {
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
   const sauce = new Sauce({
     ...sauceObject,
     imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-    like :0,
-    dislike:0,
+    likes: 0,
+    dislikes: 0,
   });
   sauce.save()
     .then(() => res.status(201).json({ message: 'Objet enregistré !' }))
