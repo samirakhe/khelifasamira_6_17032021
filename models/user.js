@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const uniqueVlidator =  require('mongoose-unique-validator');
+const uniqueVlidator =require('mongoose-unique-validator');
 
 
 
