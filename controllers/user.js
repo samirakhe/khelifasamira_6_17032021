@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt');
 const passwordValidator = require('password-validator');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+require('dotenv').config();
+
 
 const passwordSchema = new passwordValidator();
 
@@ -18,23 +20,23 @@ passwordSchema
 // La fonction signup va crypté le mdp,va prendre le mdp crypté et créé un nouveau user avec
 //ce mot de passe crypté le ladresse mail placé dans le corps de la requete,
 // et va enreigstrer cet utilisateur dans la base de donné, on a donc notre logique de signup
-exports.signup = (req, res) => {
-  if(schema.validate(req.body.password)){
-  bcrypt.hash(req.body.password, 10)
+exports.signup = ('',(req, res, next) => {
+  if(passwordSchema.validate(req.body.password)){
+    bcrypt.hash(req.body.password, 10)
     .then( hash => {// ici on a recup le hash du mot de passe quon va enregistré dans un nvo user , dans la bdd
       const user = new User({ //User = le model mongoose
         email: req.body.email, // comme adress email on va placer ladresse qui est fourni dans le corps de la requete
         password: hash
-      });
+      })
       user.save()
         .then(() =>res.status(201).json({ message: 'Utilisateur créé'}))
-        .catch((error) => res.status(400).json({ error }));
+        .catch((error) => res.status(401).json({ error }))
     })
     .catch((error) => res.status(500).json({ error }));
   }else {
-    return res.statut(500).json({ message : 'Mot de passe trop faible'});
+    return res.json({message: 'Votre mot de passe ne contient pas les caractères attendus'});
   };
-};
+});
 
 
 //dans cette fonction login on récupere l'utilisateur de la base qui correspond à l'adresse mail entré
