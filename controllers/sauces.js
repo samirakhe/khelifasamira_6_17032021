@@ -1,11 +1,11 @@
 /* eslint-disable linebreak-style */
-const Sauce = require('../models/sauces');
 const fs = require('fs');
 const { Server } = require('http');
+const Sauce = require('../models/sauces');
 
 //LIKE ET DISLIKE///////////////////////////////////////////////////////////////////////////////////////
 exports.likedSauce = (req, res, next) => {
-  const bodyValue = req.body.like;
+  const likeValue = req.body.like;
   const usersLiked = req.body.usersLiked;
   const usersDisliked = req.body.usersDisliked;
   const liked = {
@@ -13,8 +13,8 @@ exports.likedSauce = (req, res, next) => {
     like: req.body.likes
   }
 
-  switch (bodyValue) {
-
+  switch (likeValue) {
+    
     case 1:
     
       Sauce.updateOne({_id:req.params.id}, {$inc:{likes:+1}, $push:{usersLiked:req.body.userId}})
@@ -44,7 +44,7 @@ exports.likedSauce = (req, res, next) => {
             })
             .then(() => res.status(201).json({ message: 'tout est ok !' }))
             .catch((error) => res.status(400).json({ error })); 
-}
+  }
 };
 
 exports.createSauce = (req, res) => {
@@ -63,7 +63,7 @@ exports.createSauce = (req, res) => {
 
 exports.modifySauce = (req, res) => {
   const sauceObject = req.file ? // on utilise le ternaire pour savoir si req.file existe
-  //sil existe on a type dobjet et sil existe pas on a un autre type
+  // sil existe on a type dobjet et sil existe pas on a un autre type
     {
       ...JSON.parse(req.body.sauce),
       imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
@@ -74,21 +74,15 @@ exports.modifySauce = (req, res) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
-
-
-
-
-
-
 // ici dans un premier temps :  on trouve lobjet dans la base de données, ensuite
-//quand on le trouve on extrait le nom du fichier a supprimé, ensuite
-//avec ce nom de fichier on le supprime avec fs.unlik, puis
-//dans le callback du f.unlik, une fois que la suppression du fichier est effectuée on
-//on fait la suppression de lobjet dans la base en renvoyant les reponses selon si ca a fonctionné ou non
+// quand on le trouve on extrait le nom du fichier a supprimé, ensuite
+// avec ce nom de fichier on le supprime avec fs.unlik, puis
+// dans le callback du f.unlik, une fois que la suppression du fichier est effectuée on
+// on fait la suppression de lobjet dans la base en renvoyant les reponses selon si ca a fonctionne
 
 exports.deleteSauce = (req, res) => {
   Sauce.findOne({ _id: req.params.id })
-      .then(sauce =>{
+      .then(sauce => {
         const filename = sauce.imageUrl.split('/images')[1];
         fs.unlink(`images/${filename}`, () => {
           Sauce.deleteOne({ _id: req.params.id })

@@ -1,15 +1,29 @@
 const bcrypt = require('bcrypt');
+const passwordValidator = require('password-validator');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+
+const passwordSchema = new passwordValidator();
+
+passwordSchema
+.is().min(8)                                    // Minimum length 8
+.is().max(100)                                  // Maximum length 100
+.has().uppercase()                              // Must have uppercase letters
+.has().lowercase()                              // Must have lowercase letters
+.has().digits(2)                                // Must have at least 2 digits
+.has().not().spaces()                           // Should not have spaces
+.is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
+
 
 // La fonction signup va crypté le mdp,va prendre le mdp crypté et créé un nouveau user avec
 //ce mot de passe crypté le ladresse mail placé dans le corps de la requete,
 // et va enreigstrer cet utilisateur dans la base de donné, on a donc notre logique de signup
 exports.signup = (req, res) => {
+  if(schema.validate(req.body.password)){
   bcrypt.hash(req.body.password, 10)
     .then( hash => {// ici on a recup le hash du mot de passe quon va enregistré dans un nvo user , dans la bdd
-      const user = new User({ //User c'est le model mongoose
-        email: req.body.email, // comme adress email on va placer ladress qui est fourni dans le corps de la requete
+      const user = new User({ //User = le model mongoose
+        email: req.body.email, // comme adress email on va placer ladresse qui est fourni dans le corps de la requete
         password: hash
       });
       user.save()
@@ -17,6 +31,9 @@ exports.signup = (req, res) => {
         .catch((error) => res.status(400).json({ error }));
     })
     .catch((error) => res.status(500).json({ error }));
+  }else {
+    return res.statut(500).json({ message : 'Mot de passe trop faible'});
+  };
 };
 
 
@@ -44,8 +61,8 @@ exports.login = (req, res) => {
             token: jwt.sign(// cette fonction sign prend 2arguments
 
               { userId: user._id }, //le 1er argument sera les données que l'on veut encodés 'payload '
-              'RANDOM_TOKEN_SECRET', //le 2eme argument c'est la clé secrète pour l'encodage
-              { expiresIn: '24h' }//on apllique une expiration pour le token
+              process.env.RANDOM_SECRET_KEY, //le 2eme argument c'est la clé secrète pour l'encodage
+              { expiresIn: process.env.TOKEN_DELAY }//on apllique une expiration pour le token
             )
           })
         })
