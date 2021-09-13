@@ -48,7 +48,7 @@ exports.login = (req, res) => {
   User.findOne({ email: req.body.email })     //fonction asynchrone,pour trouver un seul utilisateur de la bdd
     .then(user => {//ici on verifie si on a recuperer un user ou non
       if(!user) {
-        return res.status(401).json({ error : ' Utilsiateur non trouvé'});
+        return res.status(401).json({ error : 'Adresse email ou mot de passe incorrect'});
       }
       //mais si on arrive ici c'est quon a bien trouvé l'user, et on va utilise rbcrypt pour comparer 
       //le mpd envoyé par l'utilisateur qui essaie de se connecté, avec le hash qui est 
@@ -56,7 +56,7 @@ exports.login = (req, res) => {
       bcrypt.compare(req.body.password, user.password) // on veu comparer le mdp qui est envoyé avec la requete avec le hash qui est enreigtsré dans notre user
         .then(valid => { //ici on recoit un boolean pour savoir si la comparaison est valable ou non
           if (!valid){
-            return res.status(401).json({ error : ' Mot de passe inccorect' });
+            return res.status(401).json({ error : 'Adresse email ou mot de passe incorrect' });
           }
           res.status(200).json({
             userId: user._id,

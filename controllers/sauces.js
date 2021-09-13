@@ -2,8 +2,9 @@
 const fs = require('fs');
 const { Server } = require('http');
 const Sauce = require('../models/sauces');
+const {validationResult} = require('express-validator');
 
-//LIKE ET DISLIKE///////////////////////////////////////////////////////////////////////////////////////
+// LIKE ET DISLIKE/////////////////////////////////////////////////////////////////////////////////
 exports.likedSauce = (req, res, next) => {
   const likeValue = req.body.like;
   const usersLiked = req.body.usersLiked;
@@ -48,6 +49,14 @@ exports.likedSauce = (req, res, next) => {
 };
 
 exports.createSauce = (req, res) => {
+   const errors = validationResult(req);
+   if (!errors.isEmpty()){
+     const messages = errors.array().map(error => {
+       return error.msg;
+     })
+     return res.status(400).json({ messages });
+   }
+  console.log(req.body);
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
   const sauce = new Sauce({

@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const helmet = require('helmet');
+const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
 
 const Sauce = require('./models/sauces');
@@ -32,8 +33,9 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded());
-app.use(helmet());
+/*app.use(helmet());
 app.use(mongoSanitize());
+app.use(xss());*/
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/sauces', saucesRoutes);
