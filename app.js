@@ -33,9 +33,9 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded());
-/*app.use(helmet());
+app.use(helmet());
 app.use(mongoSanitize());
-app.use(xss());*/
+app.use(xss());
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/sauces', saucesRoutes);
