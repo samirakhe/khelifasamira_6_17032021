@@ -15,7 +15,6 @@ passwordSchema
 .has().not().spaces()                           // Should not have spaces
 .is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
 
-
 exports.signup = ('',(req, res, next) => {
   if(passwordSchema.validate(req.body.password)){
     bcrypt.hash(req.body.password, 10)
