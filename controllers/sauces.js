@@ -64,7 +64,9 @@ exports.likedSauce = (req, res, next) => {
                         );
                     }
                 })
-                .then(() => res.status(201).json({ message: "Action vérifiée" }))
+                .then(() =>
+                    res.status(201).json({ message: "Action vérifiée" })
+                )
                 .catch((error) => res.status(400).json({ error }));
     }
 };
@@ -75,7 +77,6 @@ exports.createSauce = (req, res) => {
     if (!req.file) {
         return res.status(400).json({ messages: "Insérer une image" });
     }
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const messages = errors.array().map((error) => {
@@ -87,41 +88,41 @@ exports.createSauce = (req, res) => {
     const sauceObject = req.body.sauce;
     const sauce = new Sauce({
         ...sauceObject,
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${
-            req.file.filename
-        }`,
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
         likes: 0,
         dislikes: 0,
     });
     sauce
         .save()
-        .then(() => res.status(201).json({ message: "Objet enregistré !" }))
+        .then(() =>
+            res.status(201).json({ message: "La sauce est enregistrée !" })
+        )
         .catch((error) => res.status(400).json({ error }));
 };
 
 //PUT
 exports.modifySauce = (req, res) => {
-    const sauceObject = req.file ?
-    {
-              ...JSON.parse(req.body.sauce),
-              imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
-    }
-        : { ...req.body };
-    if (req.file) {
-        Sauce.findOne({ _id: req.params.id })
-            .then((sauce) => {
+    Sauce.findOne({ _id: req.params.id, userId: req.user })
+        .then((sauce) => {
+            const sauceObject = req.file ? {
+                      ...JSON.parse(req.body.sauce),
+                      imageUrl: `${req.protocol}://${req.get("host")}/images/${
+                          req.file.filename
+                      }`,
+                  }
+                : { ...req.body };
+            if (req.file) {
                 const filename = sauce.imageUrl.split("/images")[1];
                 fs.unlinkSync("images/" + filename);
-            })
-            .catch((error) => res.status(404).json({ error }));
-    }
+            }
 
-    Sauce.updateOne(
-        { _id: req.params.id },
-        { ...sauceObject, _id: req.params.id }
-    )
-        .then(() => res.status(200).json({ message: "Objet modifié !" }))
-        .catch((error) => res.status(400).json({ error }));
+            Sauce.updateOne({ _id: req.params.id }, { ...sauceObject })
+                .then(() =>
+                    res.status(200).json({ message: "La sauce est modifiée !" })
+                )
+                .catch((error) => res.status(400).json({ error }));
+        })
+        .catch((error) => res.status(403).json({ message: "Unauthorized request" }));
 };
 
 //DELETE
@@ -132,7 +133,9 @@ exports.deleteSauce = (req, res) => {
             fs.unlink(`images/${filename}`, () => {
                 Sauce.deleteOne({ _id: req.params.id })
                     .then(() =>
-                        res.status(200).json({ message: "Objet supprimé !" })
+                        res
+                            .status(200)
+                            .json({ message: "La sauce est supprimée !" })
                     )
                     .catch((error) => res.status(400).json({ error }));
             });

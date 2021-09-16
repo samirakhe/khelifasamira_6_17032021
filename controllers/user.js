@@ -4,8 +4,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 require('dotenv').config();
 
+//Conditions password
 const passwordSchema = new passwordValidator();
-
 passwordSchema
 .is().min(8)                                    // Minimum length 8
 .is().max(100)                                  // Maximum length 100
@@ -15,6 +15,8 @@ passwordSchema
 .has().not().spaces()                           // Should not have spaces
 .is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
 
+
+//SIGN UP-----------------------------------------------------------------------------------------------------
 exports.signup = ('',(req, res, next) => {
   if(passwordSchema.validate(req.body.password)){
     bcrypt.hash(req.body.password, 10)
@@ -34,6 +36,7 @@ exports.signup = ('',(req, res, next) => {
 });
 
 
+//LOGIN---------------------------------------------------------------------------------------------------
 exports.login = (req, res) => {
   User.findOne({ email: req.body.email })  
     .then(user => {
